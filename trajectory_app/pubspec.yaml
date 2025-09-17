@@ -1,0 +1,38 @@
+name: trajectory_app
+description: "A new Flutter project."
+
+publish_to: 'none' 
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.7.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  fl_chart: ^0.71.0 # https://pub.dev/packages/fl_chart/install
+  flutter_svg: ^2.0.17 # https://pub.dev/packages/flutter_svg/install
+  cupertino_icons: ^1.0.8 
+  syncfusion_flutter_sliders: ^28.2.11 # https://pub.dev/packages/syncfusion_flutter_sliders/install
+  flutter_icon_shadow: ^2.0.7 # https://pub.dev/packages/flutter_icon_shadow/install
+  http: ^1.3.0
+  shared_preferences: ^2.5.3
+  file_picker: ^6.1.1
+  loading_animation_widget: ^1.3.0
+  archive: ^4.0.6
+  path_provider: ^2.1.5
+  http_parser: ^4.0.2
+
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: 3.0.2
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/
+    - assets/icons/

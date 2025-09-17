@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>NIfTI Slice Viewer with AD 預測</title>
+  <style>
+    .plane-container {
+      margin: 20px;
+    }
+    /* 將這裡的 300px 改成更大的值，例如 800px */
+    .plane-container img {
+      max-width: 800px;
+      border: 1px solid #ccc;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <h1>NIfTI 切片檢視器與 AD 預測</h1>
+  
+  <!-- 上傳區段 -->
+  <h2>上傳 NIfTI 檔 (PNG 存本地)</h2>
+  <input type="file" id="niiFile" accept=".nii,.nii.gz" />
+  <br/><br/>
+  <!-- 補充資料輸入欄位 -->
+  <h2>補充資料</h2>
+  <label for="sexInput">Sex: </label>
+  <input type="text" id="sexInput" placeholder="輸入性別" />
+  <br/>
+  <label for="ageInput">Age: </label>
+  <input type="number" id="ageInput" placeholder="輸入年齡" />
+  <br/>
+  <label for="mmseInput">MMSE: </label>
+  <input type="number" id="mmseInput" placeholder="輸入 MMSE" />
+  <br/><br/>
+  <button onclick="uploadNii()">上傳並存檔</button>
+  <div id="uploadStatus"></div>
+  
+  <!-- 載入資料與預測 -->
+  <h2>載入切片 & 預測 AD 風險指數</h2>
+  <input type="text" id="docId" placeholder="輸入 document_id" />
+  <button onclick="loadInitialSlices()">載入初始切片 (索引0)</button>
+  <button onclick="predictAD()">AD 風險指數</button>
+  <div id="predictionResult"></div>
+  
+  <!-- 顯示三方向切片 -->
+  <div class="plane-container" id="sagContainer">
+    <h3>Sagittal 切片 (索引：<span id="sagIndexDisplay">0</span>)</h3>
+    <img id="sagImg" src="" alt="Sagittal Image" />
+  </div>
+  
+  <div class="plane-container" id="corContainer">
+    <h3>Coronal 切片 (索引：<span id="corIndexDisplay">0</span>)</h3>
+    <img id="corImg" src="" alt="Coronal Image" />
+  </div>
+  
+  <div class="plane-container" id="axiContainer">
+    <h3>Axial 切片 (索引：<span id="axiIndexDisplay">0</span>)</h3>
+    <img id="axiImg" src="" alt="Axial Image" />
+  </div>
+  
+  <script>
+    let docId = "";
+    let sagIndex = 0;
+    let corIndex = 0;
+    let axiIndex = 0;
+    
+    // 上傳 NIfTI 檔與補充資料，呼叫後端 /upload_nii_png_local
+    async function uploadNii() {
+      const fileEl = document.getElementById("niiFile");
+      if (!fileEl.files.length) {
+        alert("請選擇 NIfTI 檔案");
+        return;
+      }
+      const file = fileEl.files[0];
+      const formData = new FormData();
+      formData.append("file", file);
+      
+      // 取得補充資料欄位的值
+      const sex = document.getElementById("sexInput").value.trim();
+      const age = document.getElementById("ageInput").value.trim();
+      const mmse = document.getElementById("mmseInput").value.trim();
+      
+      if (!sex || !age || !mmse) {
+        alert("請填寫所有補充資料欄位");
+        return;
+      }
+      
+      formData.append("sex", sex);
+      formData.append("age", age);
+      formData.append("mmse", mmse);
+      
+      try {
+        const response = await fetch("http://127.0.0.1:8000/upload_nii_png_local", {
+          method: "POST",
+          body: formData
+        });
+        const result = await response.json();
+        if (result.error) {
+          document.getElementById("uploadStatus").innerText = "上傳錯誤: " + result.error;
+        } else {
+          docId = result.document_id;
+          document.getElementById("uploadStatus").innerText =
+            `上傳成功, doc_id: ${docId}, folder: ${result.folderPath}`;
+          document.getElementById("docId").value = docId;
+          sagIndex = 0; corIndex = 0; axiIndex = 0;
+          document.getElementById("sagIndexDisplay").innerText = sagIndex;
+          document.getElementById("corIndexDisplay").innerText = corIndex;
+          document.getElementById("axiIndexDisplay").innerText = axiIndex;
+          loadSlice("Sagittal", sagIndex);
+          loadSlice("Coronal", corIndex);
+          loadSlice("Axial", axiIndex);
+        }
+      } catch (err) {
+        alert("上傳請求失敗: " + err);
+      }
+    }
+    
+    // 載入指定方向與 index 的切片
+    async function loadSlice(plane, index) {
+      if (!docId) {
+        console.error("docId 尚未設定");
+        return;
+      }
+      const url = `http://127.0.0.1:8000/get_slice_url/${docId}?plane=${plane}&index=${index}`;
+      try {
+        const res = await fetch(url);
+        const data = await res.json();
+        if (data.error) {
+          console.error("載入切片錯誤: " + data.error);
+          return;
+        }
+        if (plane === "Sagittal") {
+          document.getElementById("sagImg").src = data.url;
+        } else if (plane === "Coronal") {
+          document.getElementById("corImg").src = data.url;
+        } else if (plane === "Axial") {
+          document.getElementById("axiImg").src = data.url;
+        }
+      } catch (err) {
+        console.error("loadSlice 發生錯誤:", err);
+      }
+    }
+    
+    function loadInitialSlices() {
+      docId = document.getElementById("docId").value.trim();
+      if (!docId) {
+        alert("請輸入 doc_id");
+        return;
+      }
+      sagIndex = 0; corIndex = 0; axiIndex = 0;
+      document.getElementById("sagIndexDisplay").innerText = sagIndex;
+      document.getElementById("corIndexDisplay").innerText = corIndex;
+      document.getElementById("axiIndexDisplay").innerText = axiIndex;
+      loadSlice("Sagittal", sagIndex);
+      loadSlice("Coronal", corIndex);
+      loadSlice("Axial", axiIndex);
+    }
+    
+    // 為切片圖片增加滑鼠滾輪事件，變更 index
+    document.getElementById("sagImg").addEventListener("wheel", function(e) {
+      e.preventDefault();
+      sagIndex += (e.deltaY < 0 ? -1 : 1);
+      if (sagIndex < 0) sagIndex = 0;
+      document.getElementById("sagIndexDisplay").innerText = sagIndex;
+      loadSlice("Sagittal", sagIndex);
+    });
+    
+    document.getElementById("corImg").addEventListener("wheel", function(e) {
+      e.preventDefault();
+      corIndex += (e.deltaY < 0 ? -1 : 1);
+      if (corIndex < 0) corIndex = 0;
+      document.getElementById("corIndexDisplay").innerText = corIndex;
+      loadSlice("Coronal", corIndex);
+    });
+    
+    document.getElementById("axiImg").addEventListener("wheel", function(e) {
+      e.preventDefault();
+      axiIndex += (e.deltaY < 0 ? -1 : 1);
+      if (axiIndex < 0) axiIndex = 0;
+      document.getElementById("axiIndexDisplay").innerText = axiIndex;
+      loadSlice("Axial", axiIndex);
+    });
+    
+    // AD 風險預測函式：請求後端 /predict_ad API 並顯示結果
+    async function predictAD() {
+      const docIdInput = document.getElementById("docId").value.trim();
+      if (!docIdInput) {
+        alert("請先輸入 doc_id");
+        return;
+      }
+      try {
+        const response = await fetch(`http://127.0.0.1:8000/predict_ad/${docIdInput}`);
+        const result = await response.json();
+        if (result.error) {
+          document.getElementById("predictionResult").innerText = "預測錯誤：" + result.error;
+        } else {
+          document.getElementById("predictionResult").innerText = "預測結果：" + result.prediction;
+        }
+      } catch (err) {
+        console.error("預測請求失敗:", err);
+      }
+    }
+  </script>
+</body>
+</html>

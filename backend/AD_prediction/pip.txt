@@ -1,0 +1,25 @@
+.yml缺少的套件
+
+ants：
+pip install ants
+
+antspynet：
+pip install antspynet
+
+monai：
+pip install monai
+
+SimpleITK：
+pip install SimpleITK
+
+xgboost：
+pip install xgboost
+
+tqdm：
+pip install tqdm
+
+nibabel：
+pip install nibabel
+
+torch：
+pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118

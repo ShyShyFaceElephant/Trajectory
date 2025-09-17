@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <title>API 測試頁面</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        button { margin: 5px 0; }
+        input, textarea { width: 100%; margin-bottom: 10px; }
+        img { max-width: 300px; display: block; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <h1>API 測試介面</h1>
+
+    <h2>🔐 管理員註冊</h2>
+    <input type="text" id="manager_id" placeholder="醫生 ID">
+    <input type="text" id="manager_pwd" placeholder="密碼">
+    <input type="text" id="manager_name" placeholder="姓名">
+    <input type="text" id="manager_dept" placeholder="科別">
+    <input type="file" id="manager_img">
+    <button onclick="managerSignup()">註冊管理員</button>
+
+    <h2>🔑 管理員登入</h2>
+    <input type="text" id="login_manager_id" placeholder="醫生 ID">
+    <input type="text" id="login_manager_pwd" placeholder="密碼">
+    <button onclick="managerLogin()">登入管理員</button>
+    <p><strong>Token:</strong> <span id="manager_token"></span></p>
+
+    <h2>🧑‍⚕️ 取得醫生資訊</h2>
+    <button onclick="getManagerInfo()">查詢醫生資訊</button>
+    <pre id="manager_info"></pre>
+
+    <h2>👨‍👩‍👧‍👦 會員註冊</h2>
+    <input type="text" id="member_id" placeholder="身份證字號">
+    <input type="text" id="member_sex" placeholder="性別 M 或 F">
+    <input type="text" id="member_name" placeholder="姓名">
+    <input type="text" id="member_birthdate" placeholder="出生日期 (YYYYMMDD)">
+    <input type="file" id="member_img">
+    <button onclick="memberSignup()">註冊成員</button>
+
+    <h2>📋 成員列表</h2>
+    <button onclick="getMemberList()">取得成員列表</button>
+    <pre id="member_list"></pre>
+
+    <h2>🖼️ 圖片測試</h2>
+    <input type="text" id="img_member_id" placeholder="會員 ID">
+    <button onclick="getMemberImage()">載入會員個人照</button>
+    <img id="member_image" src="" alt="會員個人照">
+    <br>
+    <input type="text" id="img_manager_id" placeholder="醫生 ID">
+    <button onclick="getManagerImage()">載入醫生個人照</button>
+    <img id="manager_image" src="" alt="醫生個人照">
+
+    <script>
+        const BASE_URL = "http://localhost:8000";
+
+        let managerToken = "";
+
+        async function managerSignup() {
+            const form = new FormData();
+            form.append("id", document.getElementById("manager_id").value);
+            form.append("password", document.getElementById("manager_pwd").value);
+            form.append("department", document.getElementById("manager_dept").value);
+            form.append("name", document.getElementById("manager_name").value);
+            form.append("profile_image_file", document.getElementById("manager_img").files[0]);
+
+            const res = await fetch(`${BASE_URL}/manager/Manager_Signup`, { method: "POST", body: form });
+            alert(await res.text());
+        }
+
+        async function managerLogin() {
+            const id = document.getElementById("login_manager_id").value;
+            const password = document.getElementById("login_manager_pwd").value;
+
+            const res = await fetch(`${BASE_URL}/manager/Signin`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ id, password })
+            });
+            const data = await res.json();
+            managerToken = data.manager_token;
+            document.getElementById("manager_token").textContent = managerToken;
+        }
+
+        async function getManagerInfo() {
+            const res = await fetch(`${BASE_URL}/manager/Info`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ token: managerToken })
+            });
+            const data = await res.json();
+            document.getElementById("manager_info").textContent = JSON.stringify(data, null, 2);
+        }
+
+        async function memberSignup() {
+            const form = new FormData();
+            form.append("id", document.getElementById("member_id").value);
+            form.append("sex", document.getElementById("member_sex").value);
+            form.append("name", document.getElementById("member_name").value);
+            form.append("birthdate", document.getElementById("member_birthdate").value);
+            form.append("profile_image_file", document.getElementById("member_img").files[0]);
+            form.append("managerToken", managerToken);
+
+            const res = await fetch(`${BASE_URL}/manager/Member_Signup`, { method: "POST", body: form });
+            alert(await res.text());
+        }
+
+        async function getMemberList() {
+            const res = await fetch(`${BASE_URL}/manager/MemberList`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ token: managerToken })
+            });
+            const data = await res.json();
+            document.getElementById("member_list").textContent = JSON.stringify(data, null, 2);
+        }
+
+        async function getMemberImage() {
+            const memberId = document.getElementById("img_member_id").value;
+            const imageUrl = `${BASE_URL}/member/profile/${memberId}`;
+            document.getElementById("member_image").src = imageUrl;
+        }
+
+        async function getManagerImage() {
+            const managerId = document.getElementById("img_manager_id").value;
+            const imageUrl = `${BASE_URL}/manager/profile/${managerId}`;
+            document.getElementById("manager_image").src = imageUrl;
+        }
+    </script>
+</body>
+</html>
