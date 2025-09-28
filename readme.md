@@ -2,9 +2,9 @@
 
 ## 👀 系統簡介
 
-[![產品介紹影片：](images/demo.png)](https://youtu.be/9u6xG_67Q1s)
+[![產品介紹影片：](images/demo.png)](https://youtu.be/BqUar3XKf_s?si=NuUovgDhDbl5ky7P)
 
-> 產品介紹影片：https://youtu.be/9u6xG_67Q1s
+> 產品介紹影片：https://youtu.be/BqUar3XKf_s?si=NuUovgDhDbl5ky7P
 
 Trajectory是一套基於**腦年齡與失智症預測模型**的長期腦部健康追蹤系統，旨在滿足高齡化與少子化社會對精準醫療的需求。受試者之**腦部 MRI**影像輸入至本系統後，腦齡預測模型會提供腦齡值作為腦部健康狀態的量化指標。本系統適用於所有年齡層，不僅可作為兒童與青少年腦部成熟度的評估工具，亦能作為中老年族群認知退化的早期徵兆。
 
