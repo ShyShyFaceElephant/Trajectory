@@ -1,6 +1,7 @@
 # 🧠 Trajectory 基於腦年齡與失智症預測模型之長期腦部健康追蹤系統
 
-> **開發團隊**： [顏少于 GitHub](https://github.com/ShyShyFaceElephant)、[王冠智 GitHub](https://github.com/simonwanggggggg)、[徐睿淳 GitHub](https://github.com/1leo23)
+> **開發團隊**： [顏少于](https://github.com/ShyShyFaceElephant)、[王冠智](https://github.com/simonwanggggggg)、[徐睿淳](https://github.com/1leo
+> **技術支援**： 劉學諺
 
 ---
 
@@ -109,6 +110,7 @@ Trajectory是一套基於**腦年齡與失智症預測模型**的長期腦部健
 | 徐睿淳   | 25% | 系統發想、AI Pipeline、產品圖片及影片製作   |
 
 > 💬 註：腦年齡預測模型與失智症分類模型皆為實驗室各自專題成果
+> **失智症模型技術支援**： 劉學諺
 
 ---
 
